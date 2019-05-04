@@ -1,14 +1,15 @@
 
 const csv = require('csv-parser');
 const fs = require('fs');
-console.log(fs)
-const path = require('path')
-console.log(filename);
+
 function startTesting() {
-    const address = "士林區"
-    const zipcode = getPostCode(address);
-    console.log({
-        zipcode
+    const testCases = ["台北市", "台北市內湖區瑞光路478巷20號3樓", "內湖區", "瑞光路478巷20號3樓", "瑞光路478巷", "20號3樓", "台北市內湖區瑞光路318號"];
+    testCases.forEach(testCase => {
+        const testResult = getPostCode(testCase);
+        console.log({
+            testCase,
+            testResult
+        })
     })
 };
 
@@ -38,8 +39,7 @@ function readCSVfromDisk() {
 let allAddressOfTaiwan = [];
 async function initialize() {
     allAddressOfTaiwan = await readCSVfromDisk();
-    // console.log(allAddressOfTaiwan.length);
-    // await startTesting();
+    await startTesting();
 }
 initialize();
 
@@ -56,9 +56,22 @@ function getPostCode(targetAddress) {
         const correctCharacter = TO_REPLACE_MAP[substitution]
         correctAddress = correctAddress.replace(substitution, correctCharacter)
     }
-    const matchResult = correctAddress.match(/(?<zipcode>(^\d{5}|^\d{3})?)(?<city>\D+[縣市])?(?<district>\D+?(市區|鎮區|鎮市|[鄉鎮市區]))?(?<others>.+)?/)
+    const matchResult = correctAddress.match(/(?<zipcode>(^\d{5}|^\d{3})?)(?<city>\D+[縣市])?(?<district>\D+?(市區|鎮區|鎮市|[鄉鎮市區]))?(?<road>\D+?[段路巷弄號樓])?(?<others>.+)?/)
     const { groups } = matchResult;
-    const { zipcode, city, district, others } = groups
+    const { zipcode, city, district, road, others } = groups
+    if (road) {
+        const candidateAddress = allAddressOfTaiwan.find(address => {
+            return address['原始路名'] === road
+        })
+        if (candidateAddress) {
+            return Object.assign({}, {
+                zipcode: candidateAddress['郵遞區號'],
+                city: candidateAddress['縣市名稱'],
+                district: candidateAddress['鄉鎮市區'],
+                road: candidateAddress['原始路名'],
+            })
+        }
+    }
     if (district) {
         const candidateAddress = allAddressOfTaiwan.find(address => {
             return address['鄉鎮市區'] === district
