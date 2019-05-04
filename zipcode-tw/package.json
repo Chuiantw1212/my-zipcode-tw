@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Chuiantw1212/zipCodeTW.js/issues"
   },
-  "homepage": "https://github.com/Chuiantw1212/zipCodeTW.js#readme"
+  "homepage": "https://github.com/Chuiantw1212/zipCodeTW.js#readme",
+  "dependencies": {
+    "csv-parser": "^2.2.0"
+  }
 }
