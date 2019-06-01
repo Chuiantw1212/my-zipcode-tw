@@ -3,7 +3,16 @@ const csv = require('csv-parser');
 const fs = require('fs');
 
 function startTesting() {
-    const testCases = ["台北市", "台北市內湖區瑞光路478巷20號3樓", "內湖區", "瑞光路478巷20號3樓", "瑞光路478巷", "20號3樓", "台北市內湖區瑞光路318號"];
+    const testCases = [
+        "中山北路六段",
+        // "中興三街",
+        // "市政北七路",
+        // "台北市內湖區瑞光路478巷20號3樓",
+        // "內湖區", "瑞光路478巷20號3樓", 
+        // "瑞光路478巷", 
+        // "20號3樓", 
+        // "台北市內湖區瑞光路318號"
+    ];
     testCases.forEach(testCase => {
         const testResult = getPostCode(testCase);
         console.log({
@@ -44,21 +53,57 @@ async function initialize() {
 initialize();
 
 function getPostCode(targetAddress) {
-    const TO_REPLACE_MAP = {
-        '-': '之', '~': '之', '台': '臺',
-        '１': '1', '２': '2', '３': '3', '４': '4', '５': '5',
-        '６': '6', '７': '7', '８': '8', '９': '9', '０': '0',
-        '一': '1', '二': '2', '三': '3', '四': '4', '五': '5',
-        '六': '6', '七': '7', '八': '8', '九': '9',
-    }
-    let correctAddress = targetAddress
-    for (let substitution in TO_REPLACE_MAP) {
-        const correctCharacter = TO_REPLACE_MAP[substitution]
-        correctAddress = correctAddress.replace(substitution, correctCharacter)
-    }
-    const matchResult = correctAddress.match(/(?<zipcode>(^\d{5}|^\d{3})?)(?<city>\D+[縣市])?(?<district>\D+?(市區|鎮區|鎮市|[鄉鎮市區]))?(?<road>\D+?[段路巷弄號樓])?(?<others>.+)?/)
+    const matchResult = targetAddress.match(/(?<zipcode>(^\d{5}|^\d{3})?)(?<city>\D+[縣市])?(?<district>\D+?(市區|鎮區|鎮市|[鄉鎮市區]))?(?<road>\D+?((路(.段)?)|[街巷]))?(?<others>.+)?/)
     const { groups } = matchResult;
     const { zipcode, city, district, road, others } = groups
+    for (let part in groups) {
+        switch (part) {
+            case "zipcode":
+            case "city":
+            case "district":
+            case "others": {
+                let content = groups[part];
+                if(content){
+                    const replaceMapping = {
+                        '-': '之', '~': '之', '台': '臺',
+                    }
+                    for (let substitution in replaceMapping) {
+                        const correctCharacter = replaceMapping[substitution]
+                        content.replace(substitution, correctCharacter)
+                    }
+                }
+                break;
+            }
+            case "road": {
+                let content = groups.road;
+                if(content){
+                    if (content.indexOf("段") !== -1) {
+                        const roadNumberMapping = {
+                            '一': '１', '二': '２', '三': '３', '四': '４', '五': '５',
+                            '六': '６', '七': '７', '八': '８', '九': '９',
+                        }
+                        for (let substitution in roadNumberMapping) {
+                            const correctCharacter = roadNumberMapping[substitution]
+                            let test = "123456"
+                            // test.replace(substitution, correctCharacter)
+                            test.replace("1", "2")
+                            console.log({
+                                substitution,
+                                correctCharacter,
+                                test
+                            })
+                        }
+                    }
+                    groups.road = content;
+                }
+                break;
+            }
+        }
+    }
+    console.log({
+        groups
+    })
+
     if (road) {
         const candidateAddress = allAddressOfTaiwan.find(address => {
             return address['原始路名'] === road
