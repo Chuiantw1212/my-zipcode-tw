@@ -1,8 +1,11 @@
 {
-  "name": "zipcode-tw",
-  "version": "1.0.1",
+  "name": "zipCodeTW.js",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,7 +21,6 @@
   },
   "homepage": "https://github.com/Chuiantw1212/zipCodeTW.js#readme",
   "dependencies": {
-    "csv-parser": "^2.2.0",
-    "fs": "0.0.1-security"
+    "express": "^4.16.4"
   }
 }
